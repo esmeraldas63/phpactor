@@ -14,9 +14,16 @@ use Phpactor\MapResolver\Resolver;
 
 class LanguageServerHoverExtension implements Extension
 {
+    // TODO: file type based hover?
+    const PARAM_ENABLE = 'language_server_hover.enable';
+
     public function load(ContainerBuilder $container): void
     {
         $container->register('language_server_completion.handler.hover', function (Container $container) {
+            if ($container->parameter(self::PARAM_ENABLE)->bool() === false) {
+                return null;
+            }
+
             return new HoverHandler(
                 $container->get(LanguageServerExtension::SERVICE_SESSION_WORKSPACE),
                 $container->get(WorseReflectionExtension::SERVICE_REFLECTOR),
@@ -33,5 +40,11 @@ class LanguageServerHoverExtension implements Extension
 
     public function configure(Resolver $schema): void
     {
+        $schema->setDefaults([
+            self::PARAM_ENABLE => true,
+        ]);
+        $schema->setDescriptions([
+            self::PARAM_ENABLE => 'Enable language server hover',
+        ]);
     }
 }
